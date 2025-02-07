@@ -1,5 +1,6 @@
 package org.prog3.model;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -8,11 +9,11 @@ public class Student {
     private String studentReference;
     private String lastName;
     private String firstName;
-    private LocalDateTime dateOfBirth;
+    private LocalDate dateOfBirth;
     private Sex sex;
     private Group group;
 
-    public Student(int studentId, String studentReference, String lastName, String firstName, LocalDateTime dateOfBirth, Sex sex, Group group) {
+    public Student(int studentId, String studentReference, String lastName, String firstName, LocalDate dateOfBirth, Sex sex, Group group) {
         this.studentId = studentId;
         this.studentReference = studentReference;
         this.lastName = lastName;
@@ -20,9 +21,6 @@ public class Student {
         this.dateOfBirth = dateOfBirth;
         this.sex = sex;
         this.group = group;
-    }
-
-    public Student() {
     }
 
     public int getStudentId() {
@@ -57,11 +55,11 @@ public class Student {
         this.firstName = firstName;
     }
 
-    public LocalDateTime getDateOfBirth() {
+    public LocalDate getDateOfBirth() {
         return dateOfBirth;
     }
 
-    public void setDateOfBirth(LocalDateTime dateOfBirth) {
+    public void setDateOfBirth(LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 
@@ -80,6 +78,11 @@ public class Student {
     public void setGroup(Group group) {
         this.group = group;
     }
+
+    public Student() {
+    }
+
+
 
     @Override
     public boolean equals(Object o) {

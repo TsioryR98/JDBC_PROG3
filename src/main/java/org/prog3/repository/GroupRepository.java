@@ -19,7 +19,7 @@ public class GroupRepository implements GenericDAO<Group>{
     }
 
     @Override
-    public List<Group> showAll() {
+    public List<Group> showAll(int page, int size) {
         List<Group> groupList = new ArrayList<>();
         String query = "SELECT * FROM group";
 
@@ -40,9 +40,10 @@ public class GroupRepository implements GenericDAO<Group>{
         return groupList;
     }
 
-    @Override
-    public void createOrUpdate(Group newModel) {
 
+    @Override
+    public List<Group> saveOrUpdate(List<Group> groups) {
+        return List.of();
     }
 
     @Override
