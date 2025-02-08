@@ -28,5 +28,3 @@ CREATE TABLE IF NOT EXISTS student (
                                        groupId INT,
                                        FOREIGN KEY (groupId) REFERENCES "group"(groupId)
 );
-
-/*academicYear VARCHAR(10) CHECK (academicYear = 'L1' OR academicYear = 'L2' OR academicYear = 'L3') NOT NULL*/
