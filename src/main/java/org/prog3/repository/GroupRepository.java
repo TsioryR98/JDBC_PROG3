@@ -2,6 +2,7 @@ package org.prog3.repository;
 
 import org.prog3.database.DataSource;
 import org.prog3.model.Group;
+import org.prog3.model.Order;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,12 +20,12 @@ public class GroupRepository implements GenericDAO<Group>{
     }
 
     @Override
-    public List<Group> showAll(int page, int size) {
+    public List<Group> showAll(int page, int size, Order order) {
         List<Group> groupList = new ArrayList<>();
-        String query = "SELECT * FROM group";
+        String query = "SELECT * FROM groups";
 
         try(PreparedStatement stm = dataSource.getConnection().prepareStatement(query)) {
-            ResultSet res = stm.executeQuery(query);
+            ResultSet res = stm.executeQuery();
             while(res.next()){
                 Group groups = new Group();
                 groups.setGroupId(res.getInt("groupId"));
@@ -54,7 +55,7 @@ public class GroupRepository implements GenericDAO<Group>{
     @Override
     public Group findById(int groupId) {
         Group groupFind = null;
-        String query = "SELECT * FROM group WHERE groupId=?";
+        String query = "SELECT * FROM groups WHERE groupId=?";
 
         try(Connection connection = dataSource.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(query)
@@ -74,3 +75,6 @@ public class GroupRepository implements GenericDAO<Group>{
         }
     }
 }
+
+
+

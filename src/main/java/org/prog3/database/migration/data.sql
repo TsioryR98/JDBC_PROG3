@@ -9,8 +9,17 @@ $$
     END
 $$;
 
+DO
+$$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'orders') THEN
+            CREATE TYPE orders AS ENUM ('ASC', 'DESC');
+        END IF;
+    END
+$$;
+
 -- Creating the 'group' table
-CREATE TABLE IF NOT EXISTS "group" (
+CREATE TABLE IF NOT EXISTS groups (
                                        groupId INT PRIMARY KEY,
                                        groupName VARCHAR NOT NULL,
                                        groupYear TIMESTAMP NOT NULL,
@@ -26,5 +35,5 @@ CREATE TABLE IF NOT EXISTS student (
                                        dateOfBirth TIMESTAMP NOT NULL,
                                        sex sex NOT NULL,
                                        groupId INT,
-                                       FOREIGN KEY (groupId) REFERENCES "group"(groupId)
+                                       FOREIGN KEY (groupId) REFERENCES groups (groupId)
 );
