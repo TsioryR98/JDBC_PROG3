@@ -215,13 +215,14 @@ public class StudentRepository implements  GenericDAO<Student> {
         String query="SELECT * FROM student";
         List<String> orderConditions = new ArrayList<>();
 
-        for (OrderCriteria orderCriteria : orderCriteria) {
+        for (OrderCriteria orderCriteria : orderCriteriaList) {
             orderConditions.add(orderCriteria.getColumn() + " " + orderCriteria.getOrder().name());
         }
-        String orderQuery = " ORDER BY " + String.join(", ", orderConditions);
+        
+        query += " ORDER BY " + String.join(", ", orderConditions);
 
         try (Connection connection = dataSource.getConnection();
-            PreparedStatement statement = connection.prepareStatement(orderQuery)
+            PreparedStatement statement = connection.prepareStatement(query)
         ) {
             try(ResultSet resultSet = statement.executeQuery()){
                 while(resultSet.next()){
@@ -237,9 +238,8 @@ public class StudentRepository implements  GenericDAO<Student> {
                     student.setDateOfBirth(resultSet.getDate("date_of_birth").toLocalDate());
                     student.setSex(sexMapper.fromResultSetDbValue(resultSet.getString("sex")));
                     student.setGroup(group);
-                    students.add(student); 
-                    
-                    students.add(student);
+
+                    students.add(student);     
             }
             
             } catch (Exception e) {
