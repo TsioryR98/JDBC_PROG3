@@ -97,7 +97,7 @@ public class StudentRepository implements  GenericDAO<Student> {
                     throw new RuntimeException(e);
                 }
                 // add student after insert
-                newStudent.add(findById(modelToSave.getStudentId()));
+                newStudent.add(modelToSave.getStudentId());
             });
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -115,10 +115,8 @@ public class StudentRepository implements  GenericDAO<Student> {
             try(ResultSet resultSet = statement.executeQuery()){
                 if (resultSet.next()) {
                     int groupId = resultSet.getInt("group_id");
-                    String groupName = resultSet.getString("group_name");
                     Group group = new Group();
                     group.setGroupId(groupId);
-                    group.setGroupName(groupName);
                     studentFind = new Student(
                             resultSet.getInt("student_id"),
                             resultSet.getString("student_reference"),
@@ -207,6 +205,24 @@ public class StudentRepository implements  GenericDAO<Student> {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return students;
+    }
+
+    /*ORDER BY NAME or BIRTHDATE OR BOTH + SELECT * FROM student ORDER BY NAME ASC/DESC || ORDER BY BIRTHDATE ASC/DESC ||  SELECT * FROM student ORDER BY NAME ASC/DESC, BIRTHDATE ASC/DESC */
+
+    public List <Student> readOrderStudentByCriteria(List<Criteria> criteriaList){
+        List<Student> students = new ArrayList<>();
+         String query="SELECT * FROM student WHERE 1+1";
+         List<String> conditions = new ArrayList<>();
+         List<Object> values = new ArrayList<>();
+
+         for(Criteria criteria : criteriaList){
+            String column = criteria.getColumn();
+            Object value = criteria.getValue();
+             if("last_name".equals(column)){
+             }
+         }
+
         return students;
     }
 }
