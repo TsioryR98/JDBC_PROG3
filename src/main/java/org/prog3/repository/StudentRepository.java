@@ -161,11 +161,11 @@ public class StudentRepository implements  GenericDAO<Student> {
             String column = criteria.getColumn();
             Object value = criteria.getValue();
             if ("last_name".equals(column)) {
-                conditions.add("AND last_name ILIKE ?");
+                conditions.add(" AND last_name ILIKE ?");
                 values.add("%" + value + "%");
             }
             else if ("date_of_birth".equals(column)) {
-                conditions.add("AND date_of_birth BETWEEN ? AND ?");
+                conditions.add(" AND date_of_birth BETWEEN ? AND ?");
                 Date [] birthRange = (Date[]) value; //cast value ino DATE
                 values.add(birthRange[0]);
                 values.add(birthRange[1]);
@@ -210,20 +210,43 @@ public class StudentRepository implements  GenericDAO<Student> {
 
     /*ORDER BY NAME or BIRTHDATE OR BOTH + SELECT * FROM student ORDER BY NAME ASC/DESC || ORDER BY BIRTHDATE ASC/DESC ||  SELECT * FROM student ORDER BY NAME ASC/DESC, BIRTHDATE ASC/DESC */
 
-    public List <Student> readOrderStudentByCriteria(List<Criteria> criteriaList){
+    public List <Student> readOrderStudentByCriteria(List<OrderCriteria> orderCriteriaList){
         List<Student> students = new ArrayList<>();
-         String query="SELECT * FROM student WHERE 1+1";
-         List<String> conditions = new ArrayList<>();
-         List<Object> values = new ArrayList<>();
+        String query="SELECT * FROM student";
+        List<String> orderConditions = new ArrayList<>();
 
-         for(Criteria criteria : criteriaList){
-            String column = criteria.getColumn();
-            Object value = criteria.getValue();
-             if("last_name".equals(column)){
-             }
-         }
+        for (OrderCriteria orderCriteria : orderCriteria) {
+            orderConditions.add(orderCriteria.getColumn() + " " + orderCriteria.getOrder().name());
+        }
+        String orderQuery = " ORDER BY " + String.join(", ", orderConditions);
 
-        return students;
+        try (Connection connection = dataSource.getConnection();
+            PreparedStatement statement = connection.prepareStatement(orderQuery)
+        ) {
+            try(ResultSet resultSet = statement.executeQuery()){
+                while(resultSet.next()){
+                    int groupId = resultSet.getInt("group_id");
+                    Group group = new Group();
+                    group.setGroupId(groupId);
+
+                    Student student = new Student();
+                    student.setStudentId(resultSet.getInt("student_id"));
+                    student.setStudentReference(resultSet.getString("student_reference"));
+                    student.setLastName(resultSet.getString("last_name"));
+                    student.setFirstName(resultSet.getString("first_name"));
+                    student.setDateOfBirth(resultSet.getDate("date_of_birth").toLocalDate());
+                    student.setSex(sexMapper.fromResultSetDbValue(resultSet.getString("sex")));
+                    student.setGroup(group);
+                    students.add(student); 
+                    
+                    students.add(student);
+            }
+            
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+                return students;
+        }
     }
 }
 
