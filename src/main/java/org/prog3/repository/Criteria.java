@@ -2,19 +2,18 @@ package org.prog3.repository;
 
 public class Criteria {
     private String column;
+    private Object value;
 
-    public Object getValue() {
-        return value;
+    public Criteria(String column, Object value) {
+        this.column = column;
+        this.value = value;
     }
 
     public String getColumn() {
         return column;
     }
 
-    private Object value;
-
-    public Criteria(String column, Object value) {
-        this.column = column;
-        this.value = value;
+    public Object getValue() {
+        return value;
     }
 }

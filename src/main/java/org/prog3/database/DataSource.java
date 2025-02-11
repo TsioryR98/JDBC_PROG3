@@ -13,6 +13,7 @@ public class DataSource {
     private final String urlDataBase;
     //instance for datasource because urldatabase is final and give it in construstor instead inside getconnection
     public DataSource() {
+
         urlDataBase = "jdbc:postgresql://" + hostname + ":" + defaultPort + "/" + database;
     }
 
@@ -20,6 +21,9 @@ public class DataSource {
         try {
             return DriverManager.getConnection(urlDataBase, user, password);
         } catch (SQLException e) {
+            System.err.println("URL: " + urlDataBase);
+            System.err.println("User: " + user);
+            System.err.println("Password: " + password);
             throw new RuntimeException(e);
         }
     }

@@ -15,10 +15,17 @@ public class StudentRepository implements  GenericDAO<Student> {
     private final DataSource dataSource;
     private final SexMapper sexMapper;
 
+    //with args constructor with existing args
     public StudentRepository(DataSource dataSource, SexMapper sexMapper) {
         this.dataSource = dataSource;
         this.sexMapper = sexMapper;
     }
+
+    public StudentRepository() {
+        this.dataSource = new DataSource();
+        this.sexMapper = new SexMapper();
+    }
+
 
     private List<Student> mapStudentFromRes(ResultSet resultSet) throws SQLException {
         List<Student> students = new ArrayList<>();
@@ -48,9 +55,10 @@ public class StudentRepository implements  GenericDAO<Student> {
         if (page < 1) {
             throw new IllegalArgumentException("page must be greater than 0 but actual is " + page);
         }
-        String query = "SELECT * FROM student s ORDER BY s.student_id "+order.name()+" LIMIT ? OFFSET ?";
+        String query = "SELECT * FROM student s ORDER BY s.sex "+order.name()+" LIMIT ? OFFSET ?";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            System.out.println("Connection established!");
             //put into the sql as parameter for resultset
             preparedStatement.setInt(1, size);
             preparedStatement.setInt(2, size * (page - 1));
@@ -97,7 +105,7 @@ public class StudentRepository implements  GenericDAO<Student> {
                     throw new RuntimeException(e);
                 }
                 // add student after insert
-                newStudent.add(modelToSave.getStudentId());
+                newStudent.add(modelToSave);
             });
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -162,7 +170,7 @@ public class StudentRepository implements  GenericDAO<Student> {
             Object value = criteria.getValue();
             if ("last_name".equals(column)) {
                 conditions.add(" AND last_name ILIKE ?");
-                values.add("%" + value + "%");
+                values.add("%"+value +"%");
             }
             else if ("date_of_birth".equals(column)) {
                 conditions.add(" AND date_of_birth BETWEEN ? AND ?");
@@ -210,7 +218,7 @@ public class StudentRepository implements  GenericDAO<Student> {
 
     /*ORDER BY NAME or BIRTHDATE OR BOTH + SELECT * FROM student ORDER BY NAME ASC/DESC || ORDER BY BIRTHDATE ASC/DESC ||  SELECT * FROM student ORDER BY NAME ASC/DESC, BIRTHDATE ASC/DESC */
 
-    public List <Student> readOrderStudentByCriteria(List<OrderCriteria> orderCriteriaList){
+    public List <Student> readOrderStudentByCriteria(List<OrderCriteria> orderCriteriaList) throws SQLException {
         List<Student> students = new ArrayList<>();
         String query="SELECT * FROM student";
         List<String> orderConditions = new ArrayList<>();

@@ -1,7 +1,6 @@
 package org.prog3.model;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Student {
