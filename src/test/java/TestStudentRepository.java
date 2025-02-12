@@ -72,6 +72,32 @@ public class TestStudentRepository {
     }
 
     @Test
+
+    void PagedFilteredStudentByCriteria_test(){
+        //criteria List that can handle a list of criteria ( birthRange, last name ILIKE)
+        Date[] birthRange = {Date.valueOf("2000-01-01"), Date.valueOf("2001-12-31")};
+        List<Criteria> criteriaListBoth= new ArrayList<>();
+        criteriaListBoth.add(new Criteria("last_name", "ra"));
+        criteriaListBoth.add(new Criteria("date_of_birth", birthRange));
+
+        //List of column and order
+        List<OrderCriteria> orderCriteria = new ArrayList<>();
+        orderCriteria.add(new OrderCriteria("student_id", Order.DESC));
+
+        // the method : public List<Student> PagedFilteredStudentByCriteria(List<Criteria> criteriaList, List<OrderCriteria> orderCriteriaList,int page, int size) {
+        List<Student> PagedStudentListBothCriteria= subject.PagedFilteredStudentByCriteria(criteriaListBoth, orderCriteria, 1, 10);
+
+        //test if not null
+        assertNotNull(PagedStudentListBothCriteria);
+        String actual = subject.findById(PagedStudentListBothCriteria.get(1).getStudentId()).getLastName();
+        assertTrue(PagedStudentListBothCriteria.get(1).getLastName().equals(actual));
+
+
+
+    }
+
+
+    @Test
     void findById_pass(){
         //create from the test
 

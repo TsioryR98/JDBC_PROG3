@@ -252,5 +252,86 @@ public class StudentRepository implements  GenericDAO<Student> {
             throw new RuntimeException(e);
         }
     }
+
+
+    public List<Student> PagedFilteredStudentByCriteria(List<Criteria> criteriaList, List<OrderCriteria> orderCriteriaList, int page, int size) {
+        List<Student> students = new ArrayList<>();
+        String sql = "SELECT * FROM student WHERE 1=1"; // Keep the base WHERE clause
+        List<String> conditions = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
+
+        if (page < 1) {
+            throw new IllegalArgumentException("page must be greater than 0 but actual is " + page);
+        }
+
+        // Add conditions dynamically based on the criteria list
+        for (Criteria criteria : criteriaList) {
+            String column = criteria.getColumn();
+            Object value = criteria.getValue();
+            if ("last_name".equals(column)) {
+                conditions.add("last_name ILIKE ?");
+                values.add("%" + value + "%");
+            } else if ("date_of_birth".equals(column)) {
+                conditions.add("date_of_birth BETWEEN ? AND ?");
+                Date[] birthRange = (Date[]) value; //cast value into DATE
+                values.add(birthRange[0]);
+                values.add(birthRange[1]);
+            }
+        }
+
+        // Add conditions if any were added to the conditions list
+        if (!conditions.isEmpty()) {
+            sql += " AND " + String.join(" AND ", conditions);
+        }
+
+        // Add order conditions if provided
+        List<String> orderConditions = new ArrayList<>();
+        for (OrderCriteria orderCriteria : orderCriteriaList) {
+            orderConditions.add(orderCriteria.getColumn() + " " + orderCriteria.getOrder().name());
+        }
+        if (!orderConditions.isEmpty()) {
+            sql += " ORDER BY " + String.join(", ", orderConditions);
+        }
+
+        // Add pagination clause for LIMIT and OFFSET
+        sql += " LIMIT ? OFFSET ?";
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+            // Set pagination parameters
+            statement.setInt(1 + values.size(), size); // Set LIMIT
+            statement.setInt(2 + values.size(), size * (page - 1)); // Set OFFSET
+
+            // Set the other values from the conditions list
+            int index = 1;
+            for (Object value : values) {
+                statement.setObject(index++, value);
+            }
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    int groupId = resultSet.getInt("group_id");
+                    Group group = new Group();
+                    group.setGroupId(groupId);
+
+                    Student student = new Student();
+                    student.setStudentId(resultSet.getInt("student_id"));
+                    student.setStudentReference(resultSet.getString("student_reference"));
+                    student.setLastName(resultSet.getString("last_name"));
+                    student.setFirstName(resultSet.getString("first_name"));
+                    student.setDateOfBirth(resultSet.getDate("date_of_birth").toLocalDate());
+                    student.setSex(sexMapper.fromResultSetDbValue(resultSet.getString("sex")));
+                    student.setGroup(group);
+                    students.add(student);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return students;
+    }
+
+
 }
 
