@@ -55,10 +55,9 @@ public class StudentRepository implements  GenericDAO<Student> {
         if (page < 1) {
             throw new IllegalArgumentException("page must be greater than 0 but actual is " + page);
         }
-        String query = "SELECT * FROM student s ORDER BY s.sex "+order.name()+" LIMIT ? OFFSET ?";
+        String query = "SELECT * FROM student s ORDER BY s.sex " + order.name() + " LIMIT ? OFFSET ?";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            System.out.println("Connection established!");
             //put into the sql as parameter for resultset
             preparedStatement.setInt(1, size);
             preparedStatement.setInt(2, size * (page - 1));
@@ -74,33 +73,33 @@ public class StudentRepository implements  GenericDAO<Student> {
     @Override
     public List<Student> saveOrUpdate(List<Student> models) {
         List<Student> newStudent = new ArrayList<>();
-        String insertQuery = "INSERT INTO student (student_id, student_reference, last_name, first_name,date_of_birth, sex, group_id) VALUES (?,?,?,?,?,?,?)";
+        String insertQuery = "INSERT INTO student (student_id, student_reference, last_name, first_name,date_of_birth, sex, group_id) VALUES (?,?,?,?,?,?::sex,?)";//force cast
         //count student_id
-        String countExistStudent= "SELECT COUNT(*) FROM student WHERE student_id= ?";
+        String countExistStudent = "SELECT COUNT(*) FROM student WHERE student_id= ?";
         try (Connection connection = dataSource.getConnection()) {
             models.forEach(modelToSave -> {
                 try (PreparedStatement countStatement = connection.prepareStatement(countExistStudent)) {
                     countStatement.setInt(1, modelToSave.getStudentId());
-                        try (ResultSet resultSet = countStatement.executeQuery()){
-                            //one line for result in otherwise while
-                            if (resultSet.next()) {
-                                int countStudent = resultSet.getInt(1);
-                                //mean student doest exist and > 0 exist
-                                  if (countStudent == 0) {
-                                        try (PreparedStatement insertStatement = connection.prepareStatement(insertQuery)) {
-                                            insertStatement.setInt(1, modelToSave.getStudentId());
-                                            insertStatement.setString(2, modelToSave.getStudentReference());
-                                            insertStatement.setString(3, modelToSave.getLastName());
-                                            insertStatement.setString(4, modelToSave.getFirstName());
-                                            insertStatement.setDate(5, Date.valueOf(modelToSave.getDateOfBirth()));
-                                            insertStatement.setString(6, modelToSave.getSex().name());
-                                            insertStatement.setInt(7, modelToSave.getGroup().getGroupId());
+                    try (ResultSet resultSet = countStatement.executeQuery()) {
+                        //one line for result in otherwise while
+                        if (resultSet.next()) {
+                            int countStudent = resultSet.getInt(1);
+                            //mean student doest exist and > 0 exist
+                            if (countStudent == 0) {
+                                try (PreparedStatement insertStatement = connection.prepareStatement(insertQuery)) {
+                                    insertStatement.setInt(1, modelToSave.getStudentId());
+                                    insertStatement.setString(2, modelToSave.getStudentReference());
+                                    insertStatement.setString(3, modelToSave.getLastName());
+                                    insertStatement.setString(4, modelToSave.getFirstName());
+                                    insertStatement.setDate(5, Date.valueOf(modelToSave.getDateOfBirth()));
+                                    insertStatement.setString(6, modelToSave.getSex().name());
+                                    insertStatement.setInt(7, modelToSave.getGroup().getGroupId());
 
-                                            insertStatement.executeUpdate();
-                                    }
-                                 }
+                                    insertStatement.executeUpdate();
+                                }
                             }
                         }
+                    }
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
@@ -117,10 +116,10 @@ public class StudentRepository implements  GenericDAO<Student> {
     public Student findById(int id) {
         Student studentFind = null;
         String query = "SELECT * FROM student WHERE student_id=?";
-        try(Connection connection = dataSource.getConnection();
-            PreparedStatement statement =connection.prepareStatement(query)){
-            statement.setInt(1,id);
-            try(ResultSet resultSet = statement.executeQuery()){
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, id);
+            try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     int groupId = resultSet.getInt("group_id");
                     Group group = new Group();
@@ -135,8 +134,7 @@ public class StudentRepository implements  GenericDAO<Student> {
                             group
                     );
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         } catch (SQLException e) {
@@ -148,20 +146,20 @@ public class StudentRepository implements  GenericDAO<Student> {
     @Override
     public void delete(int student_id) {
         String query = "DELETE FROM student WHERE student_id=?";
-        try(PreparedStatement preparedStatement = dataSource.getConnection().prepareStatement(query)){
-            preparedStatement.setInt(1,student_id);
+        try (PreparedStatement preparedStatement = dataSource.getConnection().prepareStatement(query)) {
+            preparedStatement.setInt(1, student_id);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-        //filter by name and date of birth or both
+    //filter by name and date of birth or both
 
-    public List <Student> readStudentByCriteria(List<Criteria> criteriaList){
+    public List<Student> readStudentByCriteria(List<Criteria> criteriaList) {
         //WHERE 1=1 bypass name filter if it is null NOT pass directly into AND for birthdate
         List<Student> students = new ArrayList<>();
-        String sql ="SELECT * FROM student WHERE 1=1";
+        String sql = "SELECT * FROM student WHERE 1=1";
         List<String> conditions = new ArrayList<>();
         List<Object> values = new ArrayList<>();
 
@@ -170,11 +168,10 @@ public class StudentRepository implements  GenericDAO<Student> {
             Object value = criteria.getValue();
             if ("last_name".equals(column)) {
                 conditions.add(" AND last_name ILIKE ?");
-                values.add("%"+value +"%");
-            }
-            else if ("date_of_birth".equals(column)) {
+                values.add("%" + value + "%");
+            } else if ("date_of_birth".equals(column)) {
                 conditions.add(" AND date_of_birth BETWEEN ? AND ?");
-                Date [] birthRange = (Date[]) value; //cast value ino DATE
+                Date[] birthRange = (Date[]) value; //cast value ino DATE
                 values.add(birthRange[0]);
                 values.add(birthRange[1]);
             }
@@ -186,15 +183,15 @@ public class StudentRepository implements  GenericDAO<Student> {
         //put the value parameters inside conditions with set 1
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql);
-             ) {
-                int index = 1;
+        ) {
+            int index = 1;
             //put into the sql as parameter for result
 
             for (Object value : values) {
-                    statement.setObject(index++, value);
-                }
-            try(ResultSet resultSet = statement.executeQuery()){
-                while(resultSet.next()){
+                statement.setObject(index++, value);
+            }
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
                     int groupId = resultSet.getInt("group_id");
                     Group group = new Group();
                     group.setGroupId(groupId);
@@ -218,22 +215,22 @@ public class StudentRepository implements  GenericDAO<Student> {
 
     /*ORDER BY NAME or BIRTHDATE OR BOTH + SELECT * FROM student ORDER BY NAME ASC/DESC || ORDER BY BIRTHDATE ASC/DESC ||  SELECT * FROM student ORDER BY NAME ASC/DESC, BIRTHDATE ASC/DESC */
 
-    public List <Student> readOrderStudentByCriteria(List<OrderCriteria> orderCriteriaList) throws SQLException {
+    public List<Student> readOrderStudentByCriteria(List<OrderCriteria> orderCriteriaList) {
         List<Student> students = new ArrayList<>();
-        String query="SELECT * FROM student";
+        String query = "SELECT * FROM student";
         List<String> orderConditions = new ArrayList<>();
 
         for (OrderCriteria orderCriteria : orderCriteriaList) {
             orderConditions.add(orderCriteria.getColumn() + " " + orderCriteria.getOrder().name());
         }
-        
+
         query += " ORDER BY " + String.join(", ", orderConditions);
 
         try (Connection connection = dataSource.getConnection();
-            PreparedStatement statement = connection.prepareStatement(query)
+             PreparedStatement statement = connection.prepareStatement(query)
         ) {
-            try(ResultSet resultSet = statement.executeQuery()){
-                while(resultSet.next()){
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
                     int groupId = resultSet.getInt("group_id");
                     Group group = new Group();
                     group.setGroupId(groupId);
@@ -247,13 +244,12 @@ public class StudentRepository implements  GenericDAO<Student> {
                     student.setSex(sexMapper.fromResultSetDbValue(resultSet.getString("sex")));
                     student.setGroup(group);
 
-                    students.add(student);     
-            }
-            
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+                    students.add(student);
+                }
                 return students;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }
