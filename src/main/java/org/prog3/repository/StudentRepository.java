@@ -81,10 +81,9 @@ public class StudentRepository implements  GenericDAO<Student> {
                 try (PreparedStatement countStatement = connection.prepareStatement(countExistStudent)) {
                     countStatement.setInt(1, modelToSave.getStudentId());
                     try (ResultSet resultSet = countStatement.executeQuery()) {
-                        //one line for result in otherwise while
                         if (resultSet.next()) {
                             int countStudent = resultSet.getInt(1);
-                            //mean student doest exist and > 0 exist
+                            //student doest exist and > 0 exist
                             if (countStudent == 0) {
                                 try (PreparedStatement insertStatement = connection.prepareStatement(insertQuery)) {
                                     insertStatement.setInt(1, modelToSave.getStudentId());
@@ -256,7 +255,7 @@ public class StudentRepository implements  GenericDAO<Student> {
 
     public List<Student> PagedFilteredStudentByCriteria(List<Criteria> criteriaList, List<OrderCriteria> orderCriteriaList, int page, int size) {
         List<Student> students = new ArrayList<>();
-        String sql = "SELECT * FROM student WHERE 1=1"; // Keep the base WHERE clause
+        String sql = "SELECT * FROM student WHERE 1=1"; // Keep the base WHERE clause to pass even if there is AND
         List<String> conditions = new ArrayList<>();
         List<Object> values = new ArrayList<>();
 
@@ -293,17 +292,17 @@ public class StudentRepository implements  GenericDAO<Student> {
             sql += " ORDER BY " + String.join(", ", orderConditions);
         }
 
-        // Add pagination clause for LIMIT and OFFSET
+        // Add LIMIT and OFFSET to sql
         sql += " LIMIT ? OFFSET ?";
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)
         ) {
             // Set pagination parameters
-            statement.setInt(1 + values.size(), size); // Set LIMIT
-            statement.setInt(2 + values.size(), size * (page - 1)); // Set OFFSET
+            statement.setInt(1 + values.size(), size);
+            statement.setInt(2 + values.size(), size * (page - 1)); //
 
-            // Set the other values from the conditions list
+            // Set the other values from the conditions list by loop
             int index = 1;
             for (Object value : values) {
                 statement.setObject(index++, value);

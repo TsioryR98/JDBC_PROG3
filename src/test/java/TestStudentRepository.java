@@ -89,6 +89,7 @@ public class TestStudentRepository {
 
         //test if not null
         assertNotNull(PagedStudentListBothCriteria);
+        //test equal with result in database
         String actual = subject.findById(PagedStudentListBothCriteria.get(1).getStudentId()).getLastName();
         assertTrue(PagedStudentListBothCriteria.get(1).getLastName().equals(actual));
 
